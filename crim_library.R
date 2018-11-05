@@ -75,7 +75,13 @@ parse_crimes_dates <- function(parsed_htmls){
 
 
 cleaning_function <- function(data){
-}
+  for(i in 1:length(data)){
+    data[[i]][[1]] <- as.character(data[[i]][[1]])
+    data[[i]][[2]] <- as.character(data[[i]][[2]])
+  }
+  return(data)
+  }
+
 
 
 ATEST <- get_site_content(neighborhoods_URL)
