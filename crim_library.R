@@ -4,6 +4,7 @@ library(rvest)
 library(XML)
 library(xml2)
 library(RCurl)
+library(lubridate)
 
 ## creating URLs to scrape information from for each Boston neighborhood ## 
 
@@ -78,12 +79,31 @@ cleaning_function <- function(data){
   for(i in 1:length(data)){
     data[[i]][[1]] <- as.character(data[[i]][[1]])
     data[[i]][[2]] <- as.character(data[[i]][[2]])
+    #clean crimes 
+    data[[i]][[1]] <- trimws(data[[i]][[1]])
+    data[[i]][[1]] <- gsub("\n","",data[[i]][[1]])
+    #clean dates and extract hour 
+    data[[i]][[2]] <- gsub("-","",data[[i]][[2]])
+    data[[i]][[2]] <- gsub("//s+","",data[[i]][[2]])
+    data[[i]][[2]] <- mdy_hm(data[[i]][[2]])
+    data[[i]][[2]] <- hour(data[[i]][[2]])
+    names(data[[i]])[[2]] <- "hour"
   }
+  data <- map_df(data, ~as.data.frame(.x), .id="neighborhood")
+  data[[2]] <- tolower(data[[2]])
+  data[[2]][grepl("sho",data[[2]])] <- "shooting"
+  data[[2]][grepl("assaul", data[[2]])] <- "assault"
+  data[[2]][grepl("^oui$",data[[2]])] <- "dui"
+  data[[2]][grepl("^oui crash$", data[[2]])] <- "dui crash"
   return(data)
   }
 
+# # A <- gsub("-","",j[[1]][[2]])
+# # A <- gsub("//s+","",A)
+# # A <- mdy_hm(A)
+# 
+# ATEST  <- get_site_content(neighborhoods_URL)
+# ATEST2 <- content_to_parsed_html(ATEST)
+# ATEST3 <- parse_crimes_dates(ATEST2)
+# ATEST4 <- cleaning_function(ATEST3)
 
-
-ATEST <- get_site_content(neighborhoods_URL)
-ATEST2 <- content_to_parsed_html(ATEST)
-ATEST3 <- parse_crimes_dates(ATEST2)
